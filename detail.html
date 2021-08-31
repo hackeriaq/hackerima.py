@@ -1,0 +1,63 @@
+{% extends "linkage/base.html" %}
+{% block header %}
+</head>
+{% endblock %}
+
+{% block content %}
+
+{% if error_message %}
+  <p><b>No test result, or error message from cli was:</b></p>
+  <pre>
+  {{ error_message }}
+  </pre>
+{% else %}
+  <div id="print">
+  <br> <!-- weird firefox 3.6.3 formatting issue -->
+  <table width = "100%" border = "1">
+    <tr>
+      <td><b>Project: </b>{{ test.project }}</td>
+      <td><b>Target: </b>{{ test.target }}</td>
+      <td><b>User: </b>{{ test.user }}</td>
+      <td><b>Date: </b>{{ test.test_date|date:"M d, Y H:i:s" }}</td>
+      <td><b>Static Checks: </b>{{ test.disable_static|yesno:"no,yes" }}</td>
+      <td align = "center" id = "noprint">
+        <input type="button" name="doprint" value="Print Results" onClick="javascript:window.print()">
+      </td>
+    </tr>
+  </table> 
+  <br>
+  <table width = "100%" border = "1">
+    <tr>
+      <td><b>Target</b></td>
+      <td><b>Target License</b></td>
+      <td><b>Dependency</b></td>
+      <td><b>Static<BR>Linkage</b></td>
+      <td><b>Dependency License</b></td>
+    </tr>
+
+    {% for row in master %}
+      <tr valign = "top">
+        <td>{{ row.file }}</td>
+        {% autoescape off %}
+        <td>{{ row.license }}</td>
+        <td>{{ row.libs }}</td>
+        <td>{{ row.statics }}</td>
+        <td>{{ row.licenses }}</td>
+        {% endautoescape %}
+      </tr>
+    {% endfor %}
+  </table>
+
+{% if not test.disable_static %}
+  <div id="staticwarn">
+  <p>"Not available" in the Static Linkage column means that the necessary data
+     for detecting statically linked binaries was not present.  Static linkage
+     detection requires that the binary being tested was built with debugging
+     information.</p>
+  </div>
+{% endif %}
+
+  </div>
+{% endif %}
+
+{% endblock %}
