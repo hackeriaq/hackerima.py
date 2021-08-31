@@ -1,0 +1,52 @@
+{% extends "linkage/base.html" %}
+{% block header %}
+<script type="text/javascript" src="/site_media/js/checklist.js"></script>
+</head>
+{% endblock %}
+
+{% block content %}
+
+{% if not latest_test_list %}
+   <p><b>No tests are available.</b></p>
+{% else %}
+    <br>
+    <form name="resultsform" method="post" action="" enctype="multipart/form-data">   
+    <table width = "100%" border="1">
+      <tr align="left">
+        <td align="center"><input type="checkbox" name="selectall"
+                    title="Select/Deselect All Test Results" 
+                    onclick="toggleall(this.form,'testcheck','selectall')" />
+        </td>
+        <td></td>
+        <td><input type="submit" name="submit" value="Delete Selected Tests"
+                    onclick="buildlist(this.form,'testcheck','testlist')" />
+        </td>
+        <td></td>
+      </tr>
+      <tr align="left">
+        <td></td>
+        <th>Target</th>
+        <th>Date</th>
+        <th>Information</th>
+      </tr>
+    {% for test in latest_test_list %}
+      <tr valign="top">
+        <td align="center"><input type="checkbox" name="testcheck" value="{{ test.id }}" /></td>
+        <td><a href="/linkage/{{ test.id }}/detail">{{ test.target }}</a></td>
+        <td>{{ test.test_date|date:"M d, Y H:i:s" }}</td>
+        <td>
+            <i>Target Directory:</i>{% if test.target_dir %}{{ test.target_dir }}{% else %}N/A{% endif %}<br>
+            <i>Recursion Level:</i> {{ test.recursion }}&nbsp;&nbsp;
+            <i>Check Static Deps:</i> {% if test.disable_static %}No{% else %}Yes{% endif %}<br>
+            <i>User:</i> {{ test.user }}<br>
+            <i>Project:</i> {{ test.project }}<br>
+            <i>Comments:</i> {{ test.comments }}
+        </td>
+      </tr>
+    {% endfor %}
+    </table>
+    <input type="hidden", name="testlist", value="" />
+    </form>
+{% endif %}
+
+{% endblock %}
