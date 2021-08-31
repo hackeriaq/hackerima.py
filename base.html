@@ -1,0 +1,42 @@
+{% include "linkage/header.html" %}
+
+  <!-- sets up the divs to control the styling of the main page body -->
+  <style type="text/css">@import "/site_media/css/bodystyle.css";</style>
+
+  <!-- sets up the styles for the progress bar -->
+  <style type="text/css">@import "/site_media/css/barstyle.css";</style>
+
+{% block header %} {% endblock %}
+
+<body onload="setdefaults();">
+
+<div id="header">
+  {% include "linkage/banner.html" %}
+  <ul>
+    <li {% if tab_test %}id="current"{% endif %}><a href="/linkage/test">Check<br>Dependencies</a></li>
+    <li {% if tab_results %}id="current"{% endif %}><a href="/linkage/results">Review<br>Results</a></li>
+    <li {% if tab_licenses %}id="current"{% endif %}><a href="/linkage/licenses">Licenses<br>&nbsp;</a></li>
+    <li {% if tab_lbindings %}id="current"{% endif %}><a href="/linkage/lbindings">License<br>Bindings</a></li>
+    <li {% if tab_policy %}id="current"{% endif %}><a href="/linkage/policy">License<br>Policies</a></li>
+    <li {% if tab_settings %}id="current"{% endif %}><a href="/linkage/settings">Settings<br>&nbsp;</a></li>
+    <li><a href="/linkage/documentation">Documentation<br>&nbsp;</a></li>
+  </ul>
+</div>
+
+<div id="lmargin">&nbsp;</div>
+<div id="main">
+{% block content %} {% endblock %}
+</div> <!-- end of main -->
+<div id="rmargin"></div>
+
+</body>
+
+{% block scripts %}
+<script type="text/javascript">
+
+function setdefaults()
+{
+}
+
+</script>
+{% endblock %}
