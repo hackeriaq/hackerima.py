@@ -1,0 +1,188 @@
+{% extends "linkage/base.html" %}
+{% block header %}
+  <!-- for the file browser -->
+  <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
+  <style type="text/css">@import "/site_media/css/containers.css";</style>
+  <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
+  <script type="text/javascript" src="/site_media/js/visibility.js"></script>
+</head>
+{% endblock %}
+
+{% block content %}
+
+<div id="title">&nbsp;{% include "linkage/noscript.html" %}</div>
+<div id="job_status" class="executor"></div>
+
+<form name="entryform" method="post" action="" enctype="multipart/form-data">
+
+<div class="container" id="entry_form">
+<table align="left">
+  <tr align="left">
+    <!-- testform.do_search.label is too long -->  
+    <td align="right"><b>Identify dependencies for a specific target file in a<br>target directory</b> (search for the file)<b>:</b></td>
+    <td><input type="checkbox" name="do_search" onclick="toggledisabled()" /></td>
+  </tr>
+  <tr align="left">
+    <td align="right"><b>{{ testform.disable_static.label }}:</b></td>
+    <td>{{ testform.disable_static }}</td>
+  </tr>
+  <tr>   
+    <td align="right">
+      <b>{{ testform.target_dir.label }}:</b>
+      <br>(Top-level directory to start file search)
+    </td>
+    <td>{{ testform.target_dir }}</td>
+    <td><input type="button" name="targetdirname" value="Select Dir"
+                title="Open a File/Directory Selector" 
+                onclick="toggle_visibility('target_select')"/></td>
+  </tr>
+  <tr>
+    <td align="right"><b>{{ testform.recursion.label }}:</b>
+      <br>(How deep to drill into the library dependencies)
+    </td>
+    <td>{{ testform.recursion }}</td>
+  </tr>      
+  <tr>
+    <td align="right"><b>{{ testform.target.label }}:</b>
+      <br>(File or top-level directory to test)
+    </td>
+    <td>{{ testform.target }}</td>
+    <td><input type="button" name="targetfilename" value="Select File"
+              title="Open a File/Directory Selector"
+              onclick="toggle_visibility('target_select')"/></td>
+  </tr>      
+  <tr>
+    <td align="right"><b>{{ testform.user.label }}:</b></td>
+    <td>{{ testform.user }}</td>
+  </tr>      
+  <tr>
+    <td align="right"><b>{{ testform.project.label }}:</b>
+      <br>(Optional name of the project being tested)
+    </td>
+    <td>{{ testform.project }}</td>
+  </tr>      
+  <tr>
+    <td align="right"><b>{{ testform.comments.label }}:</b>
+      <br>(Freeform field for any test comments for reporting)
+    </td>
+    <td>{{ testform.comments }}</td>
+  </tr>      
+
+  <tr>
+    <td></td> 
+    <td align="center"><input type="submit" name="submit" value="Run Dependency Check" /></td>
+    <td></td>
+  </tr>
+</table>
+</div>
+	
+<div class="container" id="target_select" style="display: none;"> 
+	<div id="target" class="browser"></div> 
+</div>
+</form>
+
+<div class="cfooter">
+
+{% if not static_data %}
+<p>
+<b>NOTE:</b> The database contains no data about static symbols, and thus
+will be unable to find any possible static library dependencies that may
+exist.  If you want to perform static as well as dynamic checks, please
+<a href="/linkage/settings/">reload the static database</a>.
+</p>
+{% endif %}
+
+<hr>
+<b>Subscribe to the <a href="https://lists.linux-foundation.org/mailman/listinfo/dep-checker-dev">mailing list</a></b><br>
+<b>Get latest version from <a href="http://git.linuxfoundation.org/?p=dep-checker.git;a=summary">git</a></b><br>
+<b>Report bugs and request features at <a href="http://bugs.linuxfoundation.org/enter_bug.cgi?product=Compliance">bugzilla</a></b><br>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script language="JavaScript">
+    $(document).ready( function() {
+        $('#target').fileTree({
+            root: '/',
+            script: '/linkage/dirlist/',
+            loadMessage: 'waiting to load'
+            }, function(file) {
+                filenametoentry(file);
+        });
+    });
+    function setdefaults() {
+        document.entryform.target_dir.disabled = true;
+        document.entryform.targetdirname.disabled = true;
+        document.entryform.do_search.onClick = "toggledisabled()";
+        document.getElementById("job_status").style.display = 'none';
+        {% if reload_running %}
+            document.getElementById("entry_form").style.visibility = 'hidden';
+            document.getElementById("job_status").style.display = 'block';
+            document.getElementById("job_status").innerHTML = "Getting job status...<br /><br />";
+            setTimeout("reload_status();", 5000);
+        {% else %}
+            reload_status();
+        {% endif %}
+    }
+    function toggledisabled() {
+        if (document.entryform.do_search.checked == true) {
+            document.entryform.target_dir.disabled = false;
+            document.entryform.targetdirname.disabled = false;
+            document.entryform.targetfilename.disabled = true;
+            document.entryform.target.value = '';
+        } else {
+            document.entryform.target_dir.disabled = true;
+            document.entryform.targetdirname.disabled = true;
+            document.entryform.targetfilename.disabled = false;
+            document.entryform.target_dir.value = '';
+        }
+    }
+    function filenametoentry(filename) {
+        lastchar = filename.slice(-1);
+        if (document.entryform.do_search.checked == true) {
+            // drop the trailing "/" on a dir, ignore files
+            if (lastchar == '/') {
+                filename = filename.slice(0, -1);
+                document.entryform.target_dir.value = filename;
+            }
+        } else {
+            if (lastchar == '/')
+                filename = filename.slice(0, -1);
+            // here we accept a file or dir
+            document.entryform.target.value = filename;
+        }
+    }
+    function reload_status() {
+      testid = ""
+      xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("GET", "/linkage/taskstatus/", false);
+      xmlhttp.send();
+      response = xmlhttp.responseText;
+      if (response == "None") {
+        document.getElementById("entry_form").style.visibility = 'visible';
+        document.getElementById("job_status").innerHTML = "";
+        document.getElementById("job_status").style.display = 'none';
+        document.getElementById("title").innerHTML = "<b>Create Dependency Checker Test:</b>";
+      } else {
+        document.getElementById("entry_form").style.visibility = 'hidden';
+        document.getElementById("title").innerHTML = "<b>Running task:</b>";
+        jdiv = document.getElementById("job_status");
+        jdiv.innerHTML = response;
+        jdiv.scrollTop = jdiv.scrollHeight;
+        setTimeout("reload_status();", 1000);
+      }
+      if (response.indexOf("Test Id=") != -1) {
+        ss = response.slice(response.indexOf("Test Id=")+8);
+        bs = ss.indexOf("<br");
+        testid = ss.slice(0,bs);
+      }
+      if (response.indexOf("Test Complete") != -1 && testid != "") {
+        window.location = "/linkage/" + testid + "/detail/";
+      }
+    }
+</script>
+
+{% endblock %}
+
