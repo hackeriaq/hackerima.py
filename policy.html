@@ -1,0 +1,92 @@
+{% extends "linkage/base.html" %}
+{% block header %}
+<script type="text/javascript" src="/site_media/js/checklist.js"></script>
+</head>
+{% endblock %}
+
+{% block content %}
+
+<form name="policyform" method="post" action="" enctype="multipart/form-data">   
+  <p>In this window setting, you will define the license combinations that you want 
+     the tool to flag as part of reporting linkage relationship.</p>
+  <p>As an example, if you want to be flagged when a binary licensed under A links 
+     statically to a library licensed under B, then you need to enter A under the 
+     "Target License" field, B under the "Dependency License" field, specify "Static" 
+     under relationship and click on "Add Policy".</p> 
+  <p>Once you do that, anytime the tool comes across a binary licensed under license A 
+     that statically links to a library licensed under license B, you
+     will be visually notified via the UI. You can delete and add these policies.</p> 
+
+  <table width = "100%" border="1">
+    <tr>
+      <td></td>
+      <th>Target License</th>
+      <th>Dependency License</th>
+      <th>Relationship</th>
+      <!-- Rank field is not used right now -->
+      {% if show_rank %}
+      <th>Rank</th>
+      {% endif %}
+      <th>Status</th>
+      <th>Date</th>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>{{ policyform.tlicense }}</td>
+      <td>{{ policyform.dlicense }}</td>
+      <td>{{ policyform.relationship }}</td>
+      <!-- Rank field is not used right now -->
+      {% if show_rank %}
+      <td>{{ policyform.rank }}</td>
+      {% endif %}
+      <td>{{ policyform.status }}</td>
+      <td><input type="submit" name="submit" value="Add Policy" /></td>
+    </tr>
+    <tr align="center">
+      <td><input type="checkbox" name="selectall"
+                title="Select/Deselect All Policies" 
+                onclick="toggleall(this.form,'policycheck','selectall')" />
+      </td>
+      <td></td>
+      <td>
+        <input type="submit" name="submit" value="Delete Selected Policies" 
+               onclick="buildlist(this.form,'policycheck','policylist')" />
+      </td>
+      <td></td>
+      <!-- Rank field is not used right now -->
+      {% if show_rank %}
+      <td></td>
+      {% endif %}
+      <td></td>
+      <td></td>
+    </tr>
+  {% for pol in latest_policy_list %}
+    <tr>
+      <td align="center"><input type="checkbox" name="policycheck" value="{{ pol.id }}" /></td>
+      <td>{{ pol.tlicense }}</td>
+      <td>{{ pol.dlicense }}</td>
+      <td>{{ pol.relationship }}</td>
+      <!-- Rank field is not used right now -->
+      {% if show_rank %}
+      <td>{{ pol.rank }}</td>
+      {% endif %}
+      <td>{% if pol.status %}{{ pol.status }}{% else %}U{% endif %}</td>
+      <td>{{ pol.edit_date|date:"M d, Y H:i:s" }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+  <input type="hidden", name="policylist", value="" />
+  {% if not show_rank %}
+    <div style="display:none">
+    {{ policyform.rank }}
+    </div>
+  {% endif %}
+</form>
+
+{% if not latest_policy_list %}
+   <br>
+   <b>No policies are available.</b>
+{% endif %}
+
+{% endblock %}
+
