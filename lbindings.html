@@ -1,0 +1,109 @@
+{% extends "linkage/base.html" %}
+{% block header %}
+  <!-- container div for 2 tables side-by-side -->
+  <style type="text/css">@import "/site_media/css/containers.css";</style>
+  <script type="text/javascript" src="/site_media/js/checklist.js"></script>
+</head>
+{% endblock %}
+
+{% block content %}
+<div class="container" id="target_form">
+<form name="targetlicenseform" method="post" action="" enctype="multipart/form-data">   
+  <table border="1" width="460" cellspacing="1" style='table-layout:fixed'>
+    <col width=25>
+    <col width=35>
+    <col width=160>
+    <col width=120>
+    <col width=90>
+    <tr>
+      <th colspan=2 align="right">Target:&nbsp;<br>License:&nbsp;</th>
+      <td colspan=2 align="center">{{ targetlicenseform.file }}<br>{{ targetlicenseform.license }}</td>
+      <td align="center"><button type="submit" name="submit" value="Add Target Binding">Add Target<br>Binding</button></td>
+    </tr>
+    <tr align="center">
+      <td><input type="checkbox" name="selectall"
+                title="Select/Deselect All Target Bindings" 
+                onclick="toggleall(this.form,'flcheck','selectall')" />
+      </td>
+      <td colspan=2>
+        <button type="submit" name="submit" value="Delete Selected Target Bindings" 
+               onclick="buildlist(this.form,'flcheck','targetlicenselist')">Delete Selected<br>Target Bindings
+        </button>
+      </td>
+      <td colspan=2>
+        <button type="submit" name="submit" value="Update Target Test Data">Update Target<br>Test Data</button>
+      </td>
+    <tr>
+      <td></td>
+      <th colspan=2>Target</th>
+      <th colspan=2>License</th>
+    </tr>
+    </tr>
+  {% for target in latest_targetlicense_list %}
+    <tr>
+      <td align="center"><input type="checkbox" name="flcheck" value="{{ target.id }}" /></td>
+      <td colspan=2>{{ target.file }}</td>
+      <td colspan=2>{{ target.license }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+  <input type="hidden", name="targetlicenselist", value="" />
+</form>
+
+{% if not latest_targetlicense_list %}
+   <br>
+   <b>No target bindings are available.</b>
+{% endif %}
+</div>
+
+<div class="container" id="library_form">
+<form name="liblicenseform" method="post" action="" enctype="multipart/form-data">   
+  <table border="1" width="460" cellspacing="1" style='table-layout:fixed'>
+    <col width=25>
+    <col width=35>
+    <col width=160>
+    <col width=120>
+    <col width=90>
+    <tr>
+      <th colspan=2 align="right">Library:&nbsp;<br>License:&nbsp;</th>
+      <td colspan=2 align="center">{{ liblicenseform.library }}<br>{{ liblicenseform.license }}</td>
+      <td align="center"><button type="submit" name="submit" value="Add Library Binding">Add Library<br>Binding</td>
+    </tr>
+    <tr align="center">
+      <td><input type="checkbox" name="selectall"
+                title="Select/Deselect All License Bindings" 
+                onclick="toggleall(this.form,'llcheck','selectall')" />
+      </td>
+      <td colspan=2>
+        <button type="submit" name="submit" value="Delete Selected Library Bindings" 
+               onclick="buildlist(this.form,'llcheck','liblicenselist')">Delete Selected<br>Library Bindings
+        </button>
+      </td>
+      <td colspan=2>
+        <button type="submit" name="submit" value="Update Library Test Data">Update Library<br>Test Data</button>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <th colspan=2>Library</th>
+      <th colspan=2>License</th>
+    </tr>
+  {% for lib in latest_liblicense_list %}
+    <tr>
+      <td align="center"><input type="checkbox" name="llcheck" value="{{ lib.id }}" /></td>
+      <td colspan=2>{{ lib.library }}</td>
+      <td colspan=2>{{ lib.license }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+  <input type="hidden", name="liblicenselist", value="" />
+</form>
+
+{% if not latest_liblicense_list %}
+   <br>
+   <b>No library bindings are available.</b>
+{% endif %}
+</div>
+
+{% endblock %}
+
